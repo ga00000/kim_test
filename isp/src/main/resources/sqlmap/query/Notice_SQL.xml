@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.open.Notice">
+
+	<sql id="Where">
+	
+		<if test="searchKeyword !=null and searchKeyword !=''">
+			<if test="searchCondition !=null and searchCondition !='' and searchCondition ==0">
+				AND (NT_TITLE LIKE CONCAT('%',#{searchKeyword},'%') OR NT_TITLE like CONCAT('%',#{searchKeyword},'%'))
+			</if>
+			<if test="searchCondition !=null and searchCondition !='' and searchCondition ==1">
+				AND NT_TITLE LIKE CONCAT('%',#{searchKeyword},'%')
+			</if>
+			<if test="searchCondition !=null and searchCondition !='' and searchCondition ==2">
+				AND NT_TITLE LIKE CONCAT('%',#{searchKeyword},'%')
+			</if>
+	 	</if>
+	 		<if test="schEtc01 !=null and schEtc01 !='' and schEtc01 ==1">
+				AND NULLIF(NT_ATCH_FILE_ID, '') IS NOT NULL
+			</if>
+			<if test="schEtc01 !=null and schEtc01 !='' and schEtc01 ==2">
+				AND NULLIF(NT_ATCH_FILE_ID, '') IS NULL
+			</if>
+	 	
+	</sql>
+	
+	<select id="selectContents" parameterType="noticeVO" resultType="noticeVO">
+		/* NoticeVO.selectContents */
+		<![CDATA[
+			 SELECT  
+				  NT_SEQ 											ntSeq
+				, NT_TITLE 										ntTitle
+				, NT_TITLE 										ntCont
+				, DATE_FORMAT(NT_RGST_DT,'%Y.%m.%d') ntRgstDt
+				, F_USER_NM(NT_RGST_ID) 		ntRgstId
+				, NT_ATCH_FILE_ID						ntAtchFileId
+				, NT_NOTICE_YN								ntNoticeYn
+				, DATE_FORMAT(NT_START,'%Y-%m-%d')			ntStart
+				, DATE_FORMAT(NT_END,'%Y-%m-%d')				ntEnd
+				
+		     FROM  t_kim_notice 
+			 WHERE  NT_USE_YN= 'Y'	
+				 AND NT_SEQ = #{ntSeq}
+		]]>
+	</select>
+	
+	
+	
+	<select id="selectList" parameterType="cmmnDefaultVO" resultType="noticeVO">
+		/* NoticeVO.selectList */
+		<![CDATA[
+      	     SELECT  
+				  NT_SEQ 														ntSeq
+				, NT_TITLE 													ntTitle
+				, NT_TITLE 													ntCont
+				, DATE_FORMAT(NT_RGST_DT,'%Y.%m.%d') ntRgstDt
+				, F_USER_NM(NT_RGST_ID) 					ntRgstId
+				, NT_ATCH_FILE_ID 									ntAtchFileId
+				, NT_NOTICE_YN											ntNoticeYn
+				, DATE_FORMAT(NT_START,'%Y-%m-%d')			ntStart
+				, DATE_FORMAT(NT_END,'%Y-%m-%d')				ntEnd
+				, IF(NT_NOTICE_YN = 'Y' AND NT_START < NOW() AND NT_END > NOW() , 'notice' ,'normal') noticeNormal
+				
+		     FROM t_kim_notice
+			 WHERE NT_USE_YN='Y'	
+	      ]]>
+		     <include refid="Where"/>	 
+	     <![CDATA[ 
+	    		ORDER BY noticeNormal	 DESC
+				LIMIT  #{firstIndex} , #{recordCountPerPage}
+		]]>
+	</select>	
+	
+	<select id="mainNoticeList" parameterType="cmmnDefaultVO" resultType="noticeVO">
+		/* NoticeVO.mainNoticeList */
+		<![CDATA[
+      	     SELECT  
+				  NT_SEQ 														ntSeq
+				, NT_TITLE 													ntTitle
+				, NT_TITLE 													ntCont
+				, DATE_FORMAT(NT_RGST_DT,'%Y.%m.%d') ntRgstDt
+				, F_USER_NM(NT_RGST_ID) 					ntRgstId
+				, NT_ATCH_FILE_ID 									ntAtchFileId
+				, NT_NOTICE_YN											ntNoticeYn
+				, DATE_FORMAT(NT_START,'%Y-%m-%d')			ntStart
+				, DATE_FORMAT(NT_END,'%Y-%m-%d')				ntEnd
+				, IF(NT_NOTICE_YN = 'Y' AND NT_START < NOW() AND NT_END > NOW() , 'notice' ,'normal') noticeNormal
+				
+		     FROM t_kim_notice
+			 WHERE NT_USE_YN='Y'	
+	    	ORDER BY noticeNormal	 DESC
+	      ]]>
+	</select>	
+
+
+	<select id="selectCount" parameterType="cmmnDefaultVO" resultType="int">
+		/* NoticeVO.selectCount */
+		<![CDATA[
+			SELECT 
+				COUNT(NT_SEQ)		cnt 
+				
+			FROM t_kim_notice
+			WHERE NT_USE_YN= 'Y' 
+		]]>
+			 <include refid="Where"/>
+	</select>
+	
+	<insert id="insertContents" parameterType="noticeVO">
+		/* NoticeVO.insertContents */
+		<![CDATA[
+			INSERT INTO t_kim_notice(
+           	  	  NT_SEQ 
+				, NT_TITLE 
+				, NT_CONT
+				, NT_RGST_ID 
+				, NT_ATCH_FILE_ID 
+				, NT_NOTICE_YN 
+				, NT_START 
+				, NT_END 
+			)
+			VALUES (
+				 (SELECT IFNULL(MAX(TS.NT_SEQ)+1,1) FROM t_kim_notice TS)
+				,#{ntTitle}
+				,#{ntCont}
+				,#{loginSeq}
+				,#{ntAtchFileId}
+				,#{ntNoticeYn}
+				,#{ntStart}
+				,#{ntEnd}
+			)
+		]]>
+	</insert>
+	
+	<update id="updateContents" parameterType="noticeVO">
+		/* NoticeVO.updateContents */
+		<![CDATA[
+			UPDATE t_kim_notice     
+			 SET 
+				  NT_TITLE									= #{ntTitle} 
+				, NT_TITLE 									= #{ntCont}
+				, NT_RVSE_DT 						    = NOW()
+				, NT_ATCH_FILE_ID 					= #{ntAtchFileId}
+				, NT_NOTICE_YN 						= #{ntNoticeYn}
+				, NT_START 									= #{ntStart}
+				, NT_END 										= #{ntEnd}
+				
+			WHERE  NT_SEQ = #{ntSeq}  
+		]]>
+	</update>
+	
+	<update id="deleteContents" parameterType="noticeVO">
+		/* NoticeVO.deleteContents */
+		<![CDATA[
+			UPDATE t_kim_notice
+		       SET
+	          	 NT_USE_YN		='N'
+	          	 
+			WHERE NT_SEQ=#{ntSeq}
+		]]>
+	</update>
+	
+
+
+
+	
+	
+	
+	
+</mapper>

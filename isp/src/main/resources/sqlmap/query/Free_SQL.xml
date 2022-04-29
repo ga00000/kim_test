@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.open.Free">
+
+	<sql id="Where">
+	
+		<if test="searchKeyword !=null and searchKeyword !=''">
+			<if test="searchCondition !=null and searchCondition !='' and searchCondition ==0">
+				AND (FE_TITLE LIKE CONCAT('%',#{searchKeyword},'%') OR FE_CONT like CONCAT('%',#{searchKeyword},'%'))
+			</if>
+			<if test="searchCondition !=null and searchCondition !='' and searchCondition ==1">
+				AND FE_TITLE LIKE CONCAT('%',#{searchKeyword},'%')
+			</if>
+			<if test="searchCondition !=null and searchCondition !='' and searchCondition ==2">
+				AND FE_CONT LIKE CONCAT('%',#{searchKeyword},'%')
+			</if>
+	 	</if>
+	 		<if test="schEtc01 !=null and schEtc01 !='' and schEtc01 ==1">
+				AND NULLIF(FE_ATCH_FILE_ID, '') IS NOT NULL
+			</if>
+			<if test="schEtc01 !=null and schEtc01 !='' and schEtc01 ==2">
+				AND NULLIF(FE_ATCH_FILE_ID, '') IS NULL
+			</if>
+	 	
+	</sql>
+	
+	<select id="selectContents" parameterType="freeVO" resultType="freeVO">
+		/* FreeVO.selectContents */
+		<![CDATA[
+			 SELECT  
+				  FE_SEQ 											feSeq
+				, FE_TITLE 										feTitle
+				, FE_CONT 										feCont
+				, DATE_FORMAT(FE_RGST_DT,'%Y.%m.%d') feRgstDt
+				, F_USER_NM(FE_RGST_ID) 		feRgstId
+				, FE_ATCH_FILE_ID						feAtchFileId
+				, FE_VIEW											feView
+				
+		     FROM  t_kim_free 
+			 WHERE  FE_USE_YN= 'Y'	
+				 AND FE_SEQ = #{feSeq}
+		]]>
+	</select>
+	
+	
+	
+	<select id="selectList" parameterType="cmmnDefaultVO" resultType="freeVO">
+		/* FreeVO.selectList */
+		<![CDATA[
+      	     SELECT  
+				  FE_SEQ 														feSeq
+				, FE_TITLE 													feTitle
+				, FE_CONT 													feCont
+				, DATE_FORMAT(FE_RGST_DT,'%Y.%m.%d') feRgstDt
+				, F_USER_NM(FE_RGST_ID) 					feRgstId
+				, FE_ATCH_FILE_ID 									feAtchFileId
+				, FE_VIEW														feView
+				
+		     FROM t_kim_free
+			 WHERE FE_USE_YN='Y'	
+	      ]]>
+		     <include refid="Where"/>	 
+	     <![CDATA[ 
+	    		ORDER BY FE_SEQ	 DESC
+				LIMIT  #{firstIndex} , #{recordCountPerPage}
+		]]>
+	</select>	
+
+
+	<select id="selectCount" parameterType="cmmnDefaultVO" resultType="int">
+		/* FreeVO.selectCount */
+		<![CDATA[
+			SELECT 
+				COUNT(FE_SEQ)		cnt 
+				
+			FROM t_kim_free
+			WHERE FE_USE_YN= 'Y' 
+		]]>
+			 <include refid="Where"/>
+	</select>
+	
+	<insert id="insertContents" parameterType="freeVO">
+		/* FreeVO.insertContents */
+		<![CDATA[
+			INSERT INTO t_kim_free(
+           	  	  FE_SEQ 
+				, FE_TITLE 
+				, FE_CONT
+				, FE_RGST_ID 
+				, FE_ATCH_FILE_ID 
+				, FE_VIEW
+			)
+			VALUES (
+				 (SELECT IFNULL(MAX(TS.FE_SEQ)+1,1) FROM t_kim_free TS)
+				,#{feTitle}
+				,#{feCont}
+				,#{loginSeq}
+				,#{feAtchFileId}
+				,0
+			)
+		]]>
+	</insert>
+	
+	<update id="updateContents" parameterType="freeVO">
+		/* FreeVO.updateContents */
+		<![CDATA[
+			UPDATE t_kim_free     
+			 SET 
+				  FE_TITLE									= #{feTitle} 
+				, FE_CONT 									= #{feCont}
+				, FE_RVSE_DT 						    = NOW()
+				, FE_ATCH_FILE_ID 					= #{feAtchFileId}
+				
+			WHERE  FE_SEQ = #{feSeq}  
+		]]>
+	</update>
+	
+	<update id="deleteContents" parameterType="freeVO">
+		/* FreeVO.deleteContents */
+		<![CDATA[
+			UPDATE t_kim_free
+		       SET
+	          	 FE_USE_YN		='N'
+	          	 
+			WHERE FE_SEQ=#{feSeq}
+		]]>
+	</update>
+	
+	<update id="viewUpdate" parameterType="freeVO">
+		/* FreeVO.viewUpdate */
+		<![CDATA[
+			UPDATE t_kim_free
+		       SET
+	          	 FE_VIEW		= FE_VIEW+1
+	          	 
+			WHERE FE_SEQ=#{feSeq}
+		]]>
+	</update>
+
+
+	
+	
+	
+	
+</mapper>

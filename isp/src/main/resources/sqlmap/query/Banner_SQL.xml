@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.open.Banner">
+
+	<sql id="Where">
+	
+		<if test="searchKeyword !=null and searchKeyword !=''">
+			<if test="searchCondition !=null and searchCondition !='' and searchCondition ==0">
+				AND (BA_TITLE LIKE CONCAT('%',#{searchKeyword},'%') OR BA_CONT like CONCAT('%',#{searchKeyword},'%'))
+			</if>
+			<if test="searchCondition !=null and searchCondition !='' and searchCondition ==1">
+				AND BA_TITLE LIKE CONCAT('%',#{searchKeyword},'%')
+			</if>
+			<if test="searchCondition !=null and searchCondition !='' and searchCondition ==2">
+				AND BA_CONT LIKE CONCAT('%',#{searchKeyword},'%')
+			</if>
+	 	</if>
+	 		<if test="schEtc01 !=null and schEtc01 !='' and schEtc01 ==1">
+				AND NULLIF(BA_ATCH_FILE_ID, '') IS NOT NULL
+			</if>
+			<if test="schEtc01 !=null and schEtc01 !='' and schEtc01 ==2">
+				AND NULLIF(BA_ATCH_FILE_ID, '') IS NULL
+			</if>
+	 	
+	</sql>
+	
+	<select id="selectContents" parameterType="bannerVO" resultType="bannerVO">
+		/* BannerVO.selectContents */
+		<![CDATA[
+			 SELECT  
+				  BA_SEQ 											baSeq
+				, BA_TITLE 										baTitle
+				, BA_CONT 										baCont
+				, DATE_FORMAT(BA_RGST_DT,'%Y.%m.%d') baRgstDt
+				, F_USER_NM(BA_RGST_ID) 		baRgstId
+				, BA_ATCH_FILE_ID						baAtchFileId
+				, BA_WINDOW_YN							baWindowYn
+				
+		     FROM  t_kim_banner 
+			 WHERE  BA_USE_YN= 'Y'	
+				 AND BA_SEQ = #{baSeq}
+		]]>
+	</select>
+	
+	
+	
+	<select id="selectList" parameterType="cmmnDefaultVO" resultType="bannerVO">
+		/* BannerVO.selectList */
+		<![CDATA[
+      	     SELECT  
+				  BA_SEQ 														baSeq
+				, BA_TITLE 													baTitle
+				, BA_CONT 													baCont
+				, DATE_FORMAT(BA_RGST_DT,'%Y.%m.%d') baRgstDt
+				, F_USER_NM(BA_RGST_ID) 					baRgstId
+				, BA_ATCH_FILE_ID 									baAtchFileId
+				, BA_WINDOW_YN										baWindowYn
+				
+		     FROM t_kim_banner
+			 WHERE BA_USE_YN='Y'	
+	      ]]>
+		     <include refid="Where"/>	 
+	     <![CDATA[ 
+	    		ORDER BY BA_SEQ	 DESC
+				LIMIT  #{firstIndex} , #{recordCountPerPage}
+		]]>
+	</select>	
+	
+	<select id="mainBannerList" parameterType="cmmnDefaultVO" resultType="bannerVO">
+		/* BannerVO.mainBannerList */
+		<![CDATA[
+      	     SELECT  
+				  BA_SEQ 														baSeq
+				, BA_TITLE 													baTitle
+				, BA_CONT 													baCont
+				, DATE_FORMAT(BA_RGST_DT,'%Y.%m.%d') baRgstDt
+				, F_USER_NM(BA_RGST_ID) 					baRgstId
+				, BA_ATCH_FILE_ID 									baAtchFileId
+				, BA_WINDOW_YN										baWindowYn
+				
+		     FROM t_kim_banner
+			 WHERE BA_USE_YN='Y'	
+	      ]]>
+	</select>	
+
+
+	<select id="selectCount" parameterType="cmmnDefaultVO" resultType="int">
+		/* BannerVO.selectCount */
+		<![CDATA[
+			SELECT 
+				COUNT(BA_SEQ)		cnt 
+				
+			FROM t_kim_banner
+			WHERE BA_USE_YN= 'Y' 
+		]]>
+			 <include refid="Where"/>
+	</select>
+	
+	<insert id="insertContents" parameterType="bannerVO">
+		/* BannerVO.insertContents */
+		<![CDATA[
+			INSERT INTO t_kim_banner(
+           	  	  BA_SEQ 
+				, BA_TITLE 
+				, BA_CONT
+				, BA_RGST_ID 
+				, BA_ATCH_FILE_ID 
+				, BA_WINDOW_YN
+			)
+			VALUES (
+				 (SELECT IFNULL(MAX(TS.BA_SEQ)+1,1) FROM t_kim_banner TS)
+				,#{baTitle}
+				,#{baCont}
+				,#{loginSeq}
+				,#{baAtchFileId}
+				,#{baWindowYn}
+			)
+		]]>
+	</insert>
+	
+	<update id="updateContents" parameterType="bannerVO">
+		/* BannerVO.updateContents */
+		<![CDATA[
+			UPDATE t_kim_banner     
+			 SET 
+				  BA_TITLE									= #{baTitle} 
+				, BA_CONT 									= #{baCont}
+				, BA_RVSE_DT 						    = NOW()
+				, BA_ATCH_FILE_ID 					= #{baAtchFileId}
+				, BA_WINDOW_YN 						= #{baWindowYn}
+				
+			WHERE  BA_SEQ = #{baSeq}  
+		]]>
+	</update>
+	
+	<update id="deleteContents" parameterType="bannerVO">
+		/* BannerVO.deleteContents */
+		<![CDATA[
+			UPDATE t_kim_banner
+		       SET
+	          	 BA_USE_YN		='N'
+	          	 
+			WHERE BA_SEQ=#{baSeq}
+		]]>
+	</update>
+	
+	
+
+
+	
+	
+	
+	
+</mapper>

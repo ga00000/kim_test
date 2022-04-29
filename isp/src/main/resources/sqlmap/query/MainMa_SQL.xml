@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.open.MainMa">
+
+	<sql id="Where">
+	
+		<if test="searchKeyword !=null and searchKeyword !=''">
+			<if test="searchCondition !=null and searchCondition !='' and searchCondition ==0">
+				AND (MM_TITLE LIKE CONCAT('%',#{searchKeyword},'%') OR MM_CONT like CONCAT('%',#{searchKeyword},'%'))
+			</if>
+			<if test="searchCondition !=null and searchCondition !='' and searchCondition ==1">
+				AND MM_TITLE LIKE CONCAT('%',#{searchKeyword},'%')
+			</if>
+			<if test="searchCondition !=null and searchCondition !='' and searchCondition ==2">
+				AND MM_CONT LIKE CONCAT('%',#{searchKeyword},'%')
+			</if>
+	 	</if>
+	 		<if test="schEtc01 !=null and schEtc01 !='' and schEtc01 ==1">
+				AND NULLIF(MM_ATCH_FILE_ID, '') IS NOT NULL
+			</if>
+			<if test="schEtc01 !=null and schEtc01 !='' and schEtc01 ==2">
+				AND NULLIF(MM_ATCH_FILE_ID, '') IS NULL
+			</if>
+	 	
+	</sql>
+	
+	<select id="selectContents" parameterType="mainMaVO" resultType="mainMaVO">
+		/* MainMaVO.selectContents */
+		<![CDATA[
+			 SELECT  
+				  MM_SEQ 											mmSeq
+				, MM_TITLE 										mmTitle
+				, MM_CONT 										mmCont
+				, DATE_FORMAT(MM_RGST_DT,'%Y.%m.%d') mmRgstDt
+				, F_USER_NM(MM_RGST_ID) 		mmRgstId
+				, MM_ATCH_FILE_ID						mmAtchFileId
+				, MM_REPRESENT							mmRepresent
+				, MM_ADDRESS								mmAddress
+				, MM_HP_NUM									mmHpNum
+				, MM_HP												mmHp
+				, MM_MAIL											mmMail
+				, MM_FAX											mmFax
+				
+		     FROM  t_kim_mainma 
+			 WHERE  MM_USE_YN= 'Y'	
+		]]>
+	</select>
+	
+	<!-- 	fileSn -->
+	<select id="fileSnlist" parameterType="MainMaVO" resultType="Integer">
+		/* MainMaVO.fileSnlist */
+		<![CDATA[
+			SELECT 
+						FILE_SN
+				
+			FROM t_atch_file_detail
+			WHERE 		ATCH_FILE_ID = #{mmAtchFileId}
+		]]>
+			 <include refid="Where"/>
+	</select>
+	
+
+	
+	<insert id="insertContents" parameterType="mainMaVO">
+		/* MainMaVO.insertContents */
+		<![CDATA[
+			INSERT INTO t_kim_mainma(
+           	  	  MM_SEQ 
+				, MM_TITLE 
+				, MM_CONT
+				, MM_RGST_ID 
+				, MM_ATCH_FILE_ID 
+				, MM_REPRESENT							
+				, MM_ADDRESS								
+				, MM_HP_NUM									
+				, MM_HP												
+				, MM_MAIL											
+				, MM_FAX											
+			)
+			VALUES (
+				1
+				,#{mmTitle}
+				,#{mmCont}
+				,#{loginSeq}
+				,#{mmAtchFileId}
+				,#{mmRepresent}
+				,#{mmAddress}
+				,#{mmHpNum}
+				,#{mmHp}
+				,#{mmMail}
+				,#{mmFax}
+			)
+		]]>
+	</insert>
+	
+	<update id="updateContents" parameterType="mainMaVO">
+		/* MainMaVO.updateContents */
+		<![CDATA[
+			UPDATE t_kim_mainma     
+			 SET 
+				  MM_TITLE									= #{mmTitle} 
+				, MM_CONT 									= #{mmCont}
+				, MM_RVSE_DT 						    = NOW()
+				, MM_ATCH_FILE_ID 					= #{mmAtchFileId}
+				, MM_REPRESENT						= #{mmRepresent}	
+				, MM_ADDRESS							= #{mmAddress}	
+				, MM_HP_NUM								= #{mmHpNum}	
+				, MM_HP											= #{mmHp}	
+				, MM_MAIL										= #{mmMail}	
+				, MM_FAX										= #{mmFax}	
+				
+		]]>
+	</update>
+
+
+
+	
+	
+	
+	
+</mapper>
