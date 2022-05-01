@@ -61,9 +61,9 @@ user-select: none;}
 <jsp:directive.include file="/WEB-INF/jsp/cmmn/inc/incSearchForm.jsp"/>
 <form name="defaultFrm" id="defaultFrm" method="post">
 	<input type="hidden" id="ftSeq" name="ftSeq"/>
-	<input type="hidden" id="ftSeq" name="ftSeq"/>
-	<input type="hidden" id="ftSeq" name="ftSeq"/>
-	<input type="hidden" id="ftSeq" name="ftSeq"/>
+	<input type="hidden" id="ftEmail" name="ftEmail"/>
+	<input type="hidden" id="ftName" name="ftName"/>
+	<input type="hidden" id="ftHp" name="ftHp"/>
 
 <div class="content_box">
 	<div class="join_wrap">
